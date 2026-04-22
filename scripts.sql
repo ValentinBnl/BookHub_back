@@ -1,6 +1,7 @@
 /* =============================================================
-SCRIPT DE CRÉATION DE LA BASE DE DONNÉES BOOKHUB (MPD)
+SCRIPT COMPLET : BASE DE DONNÉES BOOKHUB
 Cible : SQL Server 2019+
+Inclus : MPD, Triggers et Jeu de données de test complet
 ============================================================= */
 -- 1. CRÉATION DE LA BASE DE DONNÉES
 USE master;
@@ -17,7 +18,7 @@ GO IF NOT EXISTS (
 END GO USE BookHub;
 
 GO
--- 2. SUPPRESSION DES TABLES (DANS L'ORDRE INVERSE DES FK) POUR RÉINITIALISATION SI BESOIN
+-- 2. RÉINITIALISATION DES TABLES (Ordre respectant les FK)
 IF OBJECT_ID ('Notations', 'U') IS NOT NULL
 DROP TABLE Notations;
 
@@ -110,7 +111,7 @@ CREATE TABLE
     );
 
 GO
--- 6. TRIGGERS DE GESTION AUTOMATIQUE DES STOCKS
+-- 6. TRIGGERS DE GESTION DES STOCKS
 CREATE TRIGGER trg_AfterInsert_Emprunt ON Emprunts AFTER INSERT AS BEGIN
 SET
     NOCOUNT ON;
@@ -147,3 +148,246 @@ END;
 END;
 
 GO
+-- 7. JEU DE DONNÉES DE TEST (INSERTIONS)
+-- 7.1 Catégories
+INSERT INTO
+    Categories (nom)
+VALUES
+    ('Science-Fiction'),
+    ('Fantastique'),
+    ('Thriller'),
+    ('Développement Personnel'),
+    ('Informatique');
+
+-- 7.2 Utilisateurs
+INSERT INTO
+    Utilisateurs (nom, prenom, email, telephone, mot_de_passe, role)
+VALUES
+    (
+        'Dupont',
+        'Jean',
+        'jean.dupont@email.com',
+        '0601020304',
+        'hash_pw_1',
+        'UTILISATEUR'
+    ),
+    (
+        'Martin',
+        'Sophie',
+        'sophie.martin@email.com',
+        '0611121314',
+        'hash_pw_2',
+        'LIBRAIRE'
+    ),
+    (
+        'Admin',
+        'Global',
+        'admin@bookhub.com',
+        '0621222324',
+        'hash_pw_3',
+        'ADMIN'
+    ),
+    (
+        'Lefebvre',
+        'Thomas',
+        'thomas.l@email.com',
+        '0650403020',
+        'hash_pw_4',
+        'UTILISATEUR'
+    ),
+    (
+        'Moreau',
+        'Camille',
+        'c.moreau@email.com',
+        '0780901020',
+        'hash_pw_5',
+        'UTILISATEUR'
+    );
+
+-- 7.3 Livres
+INSERT INTO
+    Livres (
+        titre,
+        auteur,
+        isbn,
+        date_parution,
+        nombre_pages,
+        description,
+        total_exemplaires,
+        exemplaires_disponibles,
+        categorie_id
+    )
+VALUES
+    (
+        'Dune',
+        'Frank Herbert',
+        '9782221241424',
+        '1965-08-01',
+        712,
+        'L''épopée de Paul Atréides sur Arrakis.',
+        3,
+        3,
+        1
+    ),
+    (
+        'Le Hobbit',
+        'J.R.R. Tolkien',
+        '9782253049470',
+        '1937-09-21',
+        320,
+        'Un voyage inattendu pour Bilbon Sacquet.',
+        2,
+        2,
+        2
+    ),
+    (
+        'Clean Code',
+        'Robert C. Martin',
+        '9780132350884',
+        '2008-08-01',
+        464,
+        'Manuel de savoir-vivre du développeur.',
+        5,
+        5,
+        5
+    ),
+    (
+        'Le Silence des Agneaux',
+        'Thomas Harris',
+        '9782266208945',
+        '1988-05-19',
+        400,
+        'Un thriller psychologique intense.',
+        2,
+        2,
+        3
+    ),
+    (
+        '1984',
+        'George Orwell',
+        '9782070409495',
+        '1949-06-08',
+        376,
+        'Big Brother vous regarde.',
+        4,
+        4,
+        1
+    ),
+    (
+        'Atomic Habits',
+        'James Clear',
+        '9781847941831',
+        '2018-10-16',
+        320,
+        'Changer ses habitudes avec de petits pas.',
+        3,
+        3,
+        4
+    );
+
+-- 7.4 Emprunts (Le trigger va décrémenter le stock)
+-- Emprunts en cours
+INSERT INTO
+    Emprunts (
+        utilisateur_id,
+        livre_id,
+        date_emprunt,
+        date_retour_prevue,
+        statut
+    )
+VALUES
+    (
+        1,
+        1,
+        GETDATE (),
+        DATEADD (day, 14, GETDATE ()),
+        'EN COURS'
+    ),
+    (
+        1,
+        3,
+        GETDATE (),
+        DATEADD (day, 14, GETDATE ()),
+        'EN COURS'
+    ),
+    (
+        4,
+        5,
+        GETDATE (),
+        DATEADD (day, 14, GETDATE ()),
+        'EN COURS'
+    );
+
+-- Emprunt en retard (simulé)
+INSERT INTO
+    Emprunts (
+        utilisateur_id,
+        livre_id,
+        date_emprunt,
+        date_retour_prevue,
+        statut
+    )
+VALUES
+    (
+        5,
+        6,
+        DATEADD (day, -20, GETDATE ()),
+        DATEADD (day, -6, GETDATE ()),
+        'EN RETARD'
+    );
+
+-- Emprunt déjà rendu (simulé)
+INSERT INTO
+    Emprunts (
+        utilisateur_id,
+        livre_id,
+        date_emprunt,
+        date_retour_prevue,
+        date_retour_effective,
+        statut
+    )
+VALUES
+    (
+        4,
+        2,
+        DATEADD (day, -30, GETDATE ()),
+        DATEADD (day, -16, GETDATE ()),
+        DATEADD (day, -17, GETDATE ()),
+        'RENDU'
+    );
+
+-- 7.5 Réservations
+INSERT INTO
+    Reservations (
+        utilisateur_id,
+        livre_id,
+        rang_file_attente,
+        statut
+    )
+VALUES
+    (5, 1, 1, 'EN_ATTENTE'),
+    (4, 1, 2, 'EN_ATTENTE');
+
+-- 7.6 Notations
+INSERT INTO
+    Notations (utilisateur_id, livre_id, evaluation)
+VALUES
+    (1, 1, 5),
+    (1, 3, 4),
+    (4, 2, 5);
+
+GO
+-- 8. VÉRIFICATION FINALE
+SELECT
+    titre,
+    total_exemplaires,
+    exemplaires_disponibles
+FROM
+    Livres;
+
+SELECT
+    *
+FROM
+    Emprunts
+WHERE
+    statut = 'EN RETARD';
