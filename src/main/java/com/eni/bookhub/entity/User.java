@@ -40,7 +40,7 @@ public class User {
     private LocalDateTime dateCreation;
 
     public enum Role {
-        USER,
+        UTILISATEUR,
         LIBRAIRE,
         ADMIN
     }
