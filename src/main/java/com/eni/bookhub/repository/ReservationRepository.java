@@ -1,4 +1,4 @@
-package com.eni.bookhub.repositories;
+package com.eni.bookhub.repository;
 
 public class ReservationRepository {
 }
