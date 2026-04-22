@@ -1,29 +1,44 @@
 package com.eni.bookhub.config;
 
+import com.eni.bookhub.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity
 public class SecurityConfig {
 
-    private static final String[] SWAGGER_WHITELIST = {
-        "/swagger-ui/**",
-        "/v3/api-docs/**",
-        "/swagger-ui.html"
-    };
+    private final JwtFilter jwtFilter;
+
+    //  CONSTRUCTEUR
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(SWAGGER_WHITELIST).permitAll()
-                .anyRequest().authenticated()
-            )
-            .csrf(csrf -> csrf.disable());
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/test-token",
+                                "/api/test-token",
+                                "/api/auth/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+
+                .httpBasic(Customizer.withDefaults());
+
         return http.build();
     }
 }
