@@ -31,7 +31,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/test-token",
                                 "/auth/**",
-                                "/api/books/**"
+                                "/books/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

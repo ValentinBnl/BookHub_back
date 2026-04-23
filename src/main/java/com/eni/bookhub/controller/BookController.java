@@ -1,23 +1,23 @@
 package com.eni.bookhub.controller;
 
-import com.eni.bookhub.entity.Book;
-import com.eni.bookhub.repository.BookRepository;
+import com.eni.bookhub.dto.response.BookResponse;
+import com.eni.bookhub.service.BookService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/books")
+@RequestMapping("/books")
 public class BookController {
 
-    private final BookRepository repository;
+    private final BookService service;
 
-    public BookController(BookRepository repository) {
-        this.repository = repository;
+    public BookController(BookService service) {
+        this.service = service;
     }
 
     @GetMapping
-    public List<Book> getAllBooks() {
-        return repository.findAll();
+    public List<BookResponse> getAllBooks() {
+        return service.getAllBooks();
     }
 }
