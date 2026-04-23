@@ -15,7 +15,7 @@ public class TestController {
 
     @GetMapping("/api/test-token")
     public String testToken() {
-        return jwtService.generateToken("test@mail.com");
+        return jwtService.generateToken("test@mail.com", "UTILISATEUR");
     }
 
     @GetMapping("/api/secure")
