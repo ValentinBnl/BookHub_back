@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class LoanService {
@@ -83,13 +84,29 @@ public class LoanService {
         if (now.isAfter(loan.getDateRetourPrevue())) {
             loan.setStatut("EN RETARD");
         } else {
-            loan.setStatut("RENDU"); // important pour le trigger
+            loan.setStatut("RENDU");
         }
 
-        // le trigger SQL gère l'incrémentation
+        // trigger SQL gère le stock
         loanRepository.save(loan);
 
         return mapToResponse(loan);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LoanResponse> getUserLoans(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        return loanRepository
+                .findByUtilisateurIdAndStatutIn(
+                        user.getId(),
+                        List.of("EN COURS", "EN RETARD", "RENDU")
+                )
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     private LoanResponse mapToResponse(Loan loan) {
