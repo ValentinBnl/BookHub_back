@@ -41,74 +41,74 @@ GO
 -- 3. CRÉATION DES TABLES INDÉPENDANTES
 CREATE TABLE
     Categories (
-        id INT IDENTITY (1, 1) PRIMARY KEY,
-        nom NVARCHAR (50) NOT NULL UNIQUE
-    );
+                   id INT IDENTITY (1, 1) PRIMARY KEY,
+                   nom NVARCHAR (50) NOT NULL UNIQUE
+);
 
 CREATE TABLE
     Utilisateurs (
-        id INT IDENTITY (1, 1) PRIMARY KEY,
-        nom NVARCHAR (50) NOT NULL,
-        prenom NVARCHAR (50) NOT NULL,
-        email NVARCHAR (100) NOT NULL UNIQUE,
-        telephone NVARCHAR (20) NOT NULL UNIQUE,
-        mot_de_passe NVARCHAR (255) NOT NULL,
-        role NVARCHAR (20) NOT NULL CHECK (role IN ('UTILISATEUR', 'ADMIN', 'LIBRAIRE')),
-        date_creation DATETIME DEFAULT GETDATE ()
-    );
+                     id INT IDENTITY (1, 1) PRIMARY KEY,
+                     nom NVARCHAR (50) NOT NULL,
+                     prenom NVARCHAR (50) NOT NULL,
+                     email NVARCHAR (100) NOT NULL UNIQUE,
+                     telephone NVARCHAR (20) NOT NULL UNIQUE,
+                     mot_de_passe NVARCHAR (255) NOT NULL,
+                     role NVARCHAR (20) NOT NULL CHECK (role IN ('UTILISATEUR', 'ADMIN', 'LIBRAIRE')),
+                     date_creation DATETIME DEFAULT GETDATE ()
+);
 
 -- 4. CRÉATION DE LA TABLE LIVRES
 CREATE TABLE
     Livres (
-        id INT IDENTITY (1, 1) PRIMARY KEY,
-        titre NVARCHAR (255) NOT NULL,
-        auteur NVARCHAR (255) NOT NULL,
-        isbn NVARCHAR (20) NOT NULL UNIQUE,
-        date_parution DATE NOT NULL,
-        nombre_pages INT NOT NULL,
-        description NVARCHAR (MAX) NOT NULL,
-        url_couverture NVARCHAR (255),
-        total_exemplaires INT DEFAULT 1 CHECK (total_exemplaires >= 0),
-        exemplaires_disponibles INT DEFAULT 1 CHECK (exemplaires_disponibles >= 0),
-        categorie_id INT NOT NULL,
-        CONSTRAINT FK_Livres_Categories FOREIGN KEY (categorie_id) REFERENCES Categories (id)
-    );
+               id INT IDENTITY (1, 1) PRIMARY KEY,
+               titre NVARCHAR (255) NOT NULL,
+               auteur NVARCHAR (255) NOT NULL,
+               isbn NVARCHAR (20) NOT NULL UNIQUE,
+               date_parution DATE NOT NULL,
+               nombre_pages INT NOT NULL,
+               description NVARCHAR (MAX) NOT NULL,
+               url_couverture NVARCHAR (255),
+               total_exemplaires INT DEFAULT 1 CHECK (total_exemplaires >= 0),
+               exemplaires_disponibles INT DEFAULT 1 CHECK (exemplaires_disponibles >= 0),
+               categorie_id INT NOT NULL,
+               CONSTRAINT FK_Livres_Categories FOREIGN KEY (categorie_id) REFERENCES Categories (id)
+);
 
 -- 5. CRÉATION DES TABLES DE MOUVEMENTS
 CREATE TABLE
     Emprunts (
-        id INT IDENTITY (1, 1) PRIMARY KEY,
-        utilisateur_id INT NOT NULL,
-        livre_id INT NOT NULL,
-        date_emprunt DATETIME DEFAULT GETDATE (),
-        date_retour_prevue DATETIME NOT NULL,
-        date_retour_effective DATETIME NULL,
-        statut NVARCHAR (20) DEFAULT 'EN COURS' CHECK (statut IN ('EN COURS', 'RENDU', 'EN RETARD')),
-        CONSTRAINT FK_Emprunts_Utilisateurs FOREIGN KEY (utilisateur_id) REFERENCES Utilisateurs (id),
-        CONSTRAINT FK_Emprunts_Livres FOREIGN KEY (livre_id) REFERENCES Livres (id)
-    );
+                 id INT IDENTITY (1, 1) PRIMARY KEY,
+                 utilisateur_id INT NOT NULL,
+                 livre_id INT NOT NULL,
+                 date_emprunt DATETIME DEFAULT GETDATE (),
+                 date_retour_prevue DATETIME NOT NULL,
+                 date_retour_effective DATETIME NULL,
+                 statut NVARCHAR (20) DEFAULT 'EN COURS' CHECK (statut IN ('EN COURS', 'RENDU', 'EN RETARD')),
+                 CONSTRAINT FK_Emprunts_Utilisateurs FOREIGN KEY (utilisateur_id) REFERENCES Utilisateurs (id),
+                 CONSTRAINT FK_Emprunts_Livres FOREIGN KEY (livre_id) REFERENCES Livres (id)
+);
 
 CREATE TABLE
     Reservations (
-        id INT IDENTITY (1, 1) PRIMARY KEY,
-        utilisateur_id INT NOT NULL,
-        livre_id INT NOT NULL,
-        date_reservation DATETIME DEFAULT GETDATE (),
-        rang_file_attente INT NOT NULL,
-        statut NVARCHAR (20) DEFAULT 'EN_ATTENTE' CHECK (statut IN ('EN_ATTENTE', 'DISPONIBLE', 'ANNULEE')),
-        CONSTRAINT FK_Reservations_Utilisateurs FOREIGN KEY (utilisateur_id) REFERENCES Utilisateurs (id),
-        CONSTRAINT FK_Reservations_Livres FOREIGN KEY (livre_id) REFERENCES Livres (id)
-    );
+                     id INT IDENTITY (1, 1) PRIMARY KEY,
+                     utilisateur_id INT NOT NULL,
+                     livre_id INT NOT NULL,
+                     date_reservation DATETIME DEFAULT GETDATE (),
+                     rang_file_attente INT NOT NULL,
+                     statut NVARCHAR (20) DEFAULT 'EN_ATTENTE' CHECK (statut IN ('EN_ATTENTE', 'DISPONIBLE', 'ANNULEE')),
+                     CONSTRAINT FK_Reservations_Utilisateurs FOREIGN KEY (utilisateur_id) REFERENCES Utilisateurs (id),
+                     CONSTRAINT FK_Reservations_Livres FOREIGN KEY (livre_id) REFERENCES Livres (id)
+);
 
 CREATE TABLE
     Notations (
-        id INT IDENTITY (1, 1) PRIMARY KEY,
-        utilisateur_id INT NOT NULL,
-        livre_id INT NOT NULL,
-        evaluation INT NOT NULL CHECK (evaluation BETWEEN 1 AND 5),
-        CONSTRAINT FK_Notations_Utilisateurs FOREIGN KEY (utilisateur_id) REFERENCES Utilisateurs (id),
-        CONSTRAINT FK_Notations_Livres FOREIGN KEY (livre_id) REFERENCES Livres (id)
-    );
+                  id INT IDENTITY (1, 1) PRIMARY KEY,
+                  utilisateur_id INT NOT NULL,
+                  livre_id INT NOT NULL,
+                  evaluation INT NOT NULL CHECK (evaluation BETWEEN 1 AND 5),
+                  CONSTRAINT FK_Notations_Utilisateurs FOREIGN KEY (utilisateur_id) REFERENCES Utilisateurs (id),
+                  CONSTRAINT FK_Notations_Livres FOREIGN KEY (livre_id) REFERENCES Livres (id)
+);
 
 GO
 -- 6. TRIGGERS DE GESTION DES STOCKS
@@ -119,7 +119,7 @@ SET
 UPDATE Livres
 SET
     exemplaires_disponibles = exemplaires_disponibles - 1
-FROM
+    FROM
     Livres
     INNER JOIN inserted ON Livres.id = inserted.livre_id;
 
@@ -135,13 +135,13 @@ UPDATE (statut) BEGIN
 UPDATE Livres
 SET
     exemplaires_disponibles = exemplaires_disponibles + 1
-FROM
+    FROM
     Livres
     INNER JOIN inserted i ON Livres.id = i.livre_id
     INNER JOIN deleted d ON i.id = d.id
 WHERE
     i.statut = 'RENDU'
-    AND d.statut <> 'RENDU';
+  AND d.statut <> 'RENDU';
 
 END;
 
@@ -207,16 +207,16 @@ VALUES
 -- 7.3 Livres
 INSERT INTO
     Livres (
-        titre,
-        auteur,
-        isbn,
-        date_parution,
-        nombre_pages,
-        description,
-        total_exemplaires,
-        exemplaires_disponibles,
-        categorie_id
-    )
+    titre,
+    auteur,
+    isbn,
+    date_parution,
+    nombre_pages,
+    description,
+    total_exemplaires,
+    exemplaires_disponibles,
+    categorie_id
+)
 VALUES
     (
         'Dune',
@@ -509,12 +509,12 @@ VALUES
 -- Emprunts en cours
 INSERT INTO
     Emprunts (
-        utilisateur_id,
-        livre_id,
-        date_emprunt,
-        date_retour_prevue,
-        statut
-    )
+    utilisateur_id,
+    livre_id,
+    date_emprunt,
+    date_retour_prevue,
+    statut
+)
 VALUES
     (
         1,
@@ -541,12 +541,12 @@ VALUES
 -- Emprunt en retard (simulé)
 INSERT INTO
     Emprunts (
-        utilisateur_id,
-        livre_id,
-        date_emprunt,
-        date_retour_prevue,
-        statut
-    )
+    utilisateur_id,
+    livre_id,
+    date_emprunt,
+    date_retour_prevue,
+    statut
+)
 VALUES
     (
         5,
@@ -559,13 +559,13 @@ VALUES
 -- Emprunt déjà rendu (simulé)
 INSERT INTO
     Emprunts (
-        utilisateur_id,
-        livre_id,
-        date_emprunt,
-        date_retour_prevue,
-        date_retour_effective,
-        statut
-    )
+    utilisateur_id,
+    livre_id,
+    date_emprunt,
+    date_retour_prevue,
+    date_retour_effective,
+    statut
+)
 VALUES
     (
         4,
@@ -579,11 +579,11 @@ VALUES
 -- 7.5 Réservations
 INSERT INTO
     Reservations (
-        utilisateur_id,
-        livre_id,
-        rang_file_attente,
-        statut
-    )
+    utilisateur_id,
+    livre_id,
+    rang_file_attente,
+    statut
+)
 VALUES
     (5, 1, 1, 'EN_ATTENTE'),
     (4, 1, 2, 'EN_ATTENTE');
