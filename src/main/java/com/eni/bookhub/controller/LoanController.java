@@ -27,7 +27,7 @@ public class LoanController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<LoanResponse>> getMyActiveLoans(Authentication auth) {
-        return ResponseEntity.ok(service.getActiveLoans(auth.getName()));
+    public ResponseEntity<List<LoanResponse>> getMyLoans(Authentication auth) {
+        return ResponseEntity.ok(service.getUserLoans(auth.getName()));
     }
 }

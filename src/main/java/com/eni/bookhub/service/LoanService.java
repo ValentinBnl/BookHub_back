@@ -78,7 +78,7 @@ public class LoanService {
     }
 
     @Transactional(readOnly = true)
-    public List<LoanResponse> getActiveLoans(String email) {
+    public List<LoanResponse> getUserLoans(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
         return loanRepository
