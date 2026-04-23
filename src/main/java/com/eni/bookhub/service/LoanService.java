@@ -21,8 +21,8 @@ public class LoanService {
     private final UserRepository userRepository;
 
     public LoanService(LoanRepository loanRepository,
-            BookRepository bookRepository,
-            UserRepository userRepository) {
+                       BookRepository bookRepository,
+                       UserRepository userRepository) {
         this.loanRepository = loanRepository;
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
@@ -31,19 +31,16 @@ public class LoanService {
     @Transactional
     public LoanResponse borrowBook(Integer userId, Integer bookId) {
 
-        // récupérer user + book
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Livre introuvable"));
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
-        // vérif dispo
         if (book.getExemplairesDisponibles() <= 0) {
             throw new RuntimeException("Livre non disponible");
         }
 
-        // max 3 emprunts
         int activeLoans = loanRepository
                 .countByUtilisateurIdAndStatut(userId, "EN COURS");
 
@@ -51,7 +48,6 @@ public class LoanService {
             throw new RuntimeException("Max 3 emprunts atteints");
         }
 
-        // pas de retard
         boolean hasLate = loanRepository
                 .existsByUtilisateurIdAndStatut(userId, "EN RETARD");
 
@@ -59,17 +55,12 @@ public class LoanService {
             throw new RuntimeException("Utilisateur bloqué (retard)");
         }
 
-        // décrémentation stock (RG)
-        book.setExemplairesDisponibles(
-                book.getExemplairesDisponibles() - 1);
-        bookRepository.save(book);
-
-        // création emprunt
+        // création emprunt (le trigger SQL gère le stock)
         Loan loan = new Loan();
         loan.setUtilisateur(user);
         loan.setLivre(book);
         loan.setDateEmprunt(LocalDateTime.now());
-        loan.setDateRetourPrevue(LocalDateTime.now().plusDays(14)); // RG-LOAN-02
+        loan.setDateRetourPrevue(LocalDateTime.now().plusDays(14));
         loan.setStatut("EN COURS");
 
         loanRepository.save(loan);
@@ -77,12 +68,42 @@ public class LoanService {
         return mapToResponse(loan);
     }
 
+    @Transactional
+    public LoanResponse returnBook(Integer loanId) {
+
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new RuntimeException("Emprunt introuvable"));
+
+        if (!loan.getStatut().equals("EN COURS")) {
+            throw new RuntimeException("Emprunt déjà retourné");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        loan.setDateRetourEffective(now);
+
+        if (now.isAfter(loan.getDateRetourPrevue())) {
+            loan.setStatut("EN RETARD");
+        } else {
+            loan.setStatut("RENDU");
+        }
+
+        // trigger SQL gère le stock
+        loanRepository.save(loan);
+
+        return mapToResponse(loan);
+    }
+
     @Transactional(readOnly = true)
     public List<LoanResponse> getUserLoans(String email) {
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
         return loanRepository
-                .findByUtilisateurIdAndStatutIn(user.getId(), List.of("EN COURS", "EN RETARD", "RENDU"))
+                .findByUtilisateurIdAndStatutIn(
+                        user.getId(),
+                        List.of("EN COURS", "EN RETARD", "RENDU")
+                )
                 .stream()
                 .map(this::mapToResponse)
                 .toList();

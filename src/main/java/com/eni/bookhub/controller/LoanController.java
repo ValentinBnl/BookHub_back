@@ -30,4 +30,10 @@ public class LoanController {
     public ResponseEntity<List<LoanResponse>> getMyLoans(Authentication auth) {
         return ResponseEntity.ok(service.getUserLoans(auth.getName()));
     }
+
+    // Retourner un livre
+    @PutMapping("/{id}/return")
+    public LoanResponse returnBook(@PathVariable("id") Integer id) {
+        return service.returnBook(id);
+    }
 }
