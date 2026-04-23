@@ -15,12 +15,18 @@ public class LoanController {
         this.service = service;
     }
 
-    //  Emprunter un livre
+    // Emprunter un livre
     @PostMapping
     public LoanResponse borrowBook(@RequestBody LoanRequest request) {
         return service.borrowBook(
                 request.getUserId(),
                 request.getBookId()
         );
+    }
+
+    // Retourner un livre
+    @PutMapping("/{id}/return")
+    public LoanResponse returnBook(@PathVariable("id") Integer id) {
+        return service.returnBook(id);
     }
 }
