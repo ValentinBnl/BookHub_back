@@ -1,10 +1,17 @@
 package com.eni.bookhub.controller;
 
+import com.eni.bookhub.dto.request.BookRequest;
 import com.eni.bookhub.dto.response.BookResponse;
 import com.eni.bookhub.dto.response.BookSummaryResponse;
 import com.eni.bookhub.service.BookService;
-import org.springframework.data.domain.*;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -56,5 +63,24 @@ public class BookController {
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
         return PageRequest.of(page, size, sort);
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('LIBRAIRE', 'ADMIN')")
+    public ResponseEntity<BookResponse> createBook(@Valid @RequestBody BookRequest bookRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(bookService.createBook(bookRequest));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('LIBRAIRE', 'ADMIN')")
+    public ResponseEntity<BookResponse> updateBook(@PathVariable Integer id, @Valid @RequestBody BookRequest request) {
+        return ResponseEntity.ok(bookService.updateBook(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteBook(@PathVariable Integer id) {
+        bookService.deleteBook(id);
+        return ResponseEntity.noContent().build();
     }
 }
