@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class LoanService {
@@ -20,8 +21,8 @@ public class LoanService {
     private final UserRepository userRepository;
 
     public LoanService(LoanRepository loanRepository,
-                       BookRepository bookRepository,
-                       UserRepository userRepository) {
+            BookRepository bookRepository,
+            UserRepository userRepository) {
         this.loanRepository = loanRepository;
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
@@ -58,10 +59,9 @@ public class LoanService {
             throw new RuntimeException("Utilisateur bloqué (retard)");
         }
 
-        //  décrémentation stock (RG)
+        // décrémentation stock (RG)
         book.setExemplairesDisponibles(
-                book.getExemplairesDisponibles() - 1
-        );
+                book.getExemplairesDisponibles() - 1);
         bookRepository.save(book);
 
         // création emprunt
@@ -75,6 +75,17 @@ public class LoanService {
         loanRepository.save(loan);
 
         return mapToResponse(loan);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LoanResponse> getActiveLoans(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+        return loanRepository
+                .findByUtilisateurIdAndStatutIn(user.getId(), List.of("EN COURS", "EN RETARD", "RENDU"))
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     private LoanResponse mapToResponse(Loan loan) {

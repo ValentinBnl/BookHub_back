@@ -31,7 +31,8 @@ public class SecurityConfig {
                                 "/test-token",
                                 "/auth/**",
                                 "/books/**",
-                                "/loans/**"
+                                "/loans/**",
+                                "/users/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
