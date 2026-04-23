@@ -42,7 +42,7 @@ GO
 CREATE TABLE
     Categories (
         id INT IDENTITY (1, 1) PRIMARY KEY,
-        nom NVARCHAR (50) NOT NULL
+        nom NVARCHAR (50) NOT NULL UNIQUE
     );
 
 CREATE TABLE
@@ -283,6 +283,226 @@ VALUES
         3,
         3,
         4
+    ),
+    (
+        'Brave New World Revisited',
+        'Aldous Huxley',
+        '9780060898526',
+        '1958-01-01',
+        144,
+        'Essai sur les dangers des sociétés modernes.',
+        6,
+        3,
+        1
+    ),
+    (
+        'Fahrenheit 451',
+        'Ray Bradbury',
+        '9781451673319',
+        '1953-10-19',
+        249,
+        'Une société où les livres sont interdits.',
+        7,
+        4,
+        1
+    ),
+    (
+        'La Servante écarlate',
+        'Margaret Atwood',
+        '9782221196984',
+        '1985-01-01',
+        416,
+        'Une dystopie sur une société totalitaire religieuse.',
+        5,
+        2,
+        1
+    ),
+    (
+        'Neuromancien',
+        'William Gibson',
+        '9780441569595',
+        '1984-07-01',
+        271,
+        'Un classique du cyberpunk.',
+        6,
+        3,
+        2
+    ),
+    (
+        'Fondation',
+        'Isaac Asimov',
+        '9780553293357',
+        '1951-01-01',
+        255,
+        'La chute et renaissance d’un empire galactique.',
+        8,
+        5,
+        2
+    ),
+    (
+        'Snow Crash',
+        'Neal Stephenson',
+        '9780553380958',
+        '1992-06-01',
+        480,
+        'Un roman culte du cyberpunk et du métavers.',
+        4,
+        2,
+        2
+    ),
+    (
+        'L''Étranger',
+        'Albert Camus',
+        '9782070360024',
+        '1942-05-19',
+        186,
+        'Un homme face à l’absurdité de la vie.',
+        6,
+        2,
+        3
+    ),
+    (
+        'La Peste',
+        'Albert Camus',
+        '9782070360420',
+        '1947-06-10',
+        308,
+        'Une épidémie révélant la nature humaine.',
+        5,
+        1,
+        3
+    ),
+    (
+        'Les Misérables',
+        'Victor Hugo',
+        '9782253096344',
+        '1862-01-01',
+        1463,
+        'Une fresque sociale et humaine.',
+        3,
+        1,
+        3
+    ),
+    (
+        'Le Comte de Monte-Cristo',
+        'Alexandre Dumas',
+        '9782070409181',
+        '1844-01-01',
+        1243,
+        'Une vengeance magistrale.',
+        4,
+        2,
+        3
+    ),
+    (
+        'Sapiens',
+        'Yuval Noah Harari',
+        '9780062316097',
+        '2011-01-01',
+        443,
+        'Histoire de l’humanité.',
+        9,
+        5,
+        4
+    ),
+    (
+        'Homo Deus',
+        'Yuval Noah Harari',
+        '9780062464316',
+        '2015-01-01',
+        450,
+        'L’avenir de l’humanité.',
+        7,
+        3,
+        4
+    ),
+    (
+        'Deep Work',
+        'Cal Newport',
+        '9781455586691',
+        '2016-01-05',
+        296,
+        'Se concentrer dans un monde de distractions.',
+        5,
+        2,
+        4
+    ),
+    (
+        'Thinking, Fast and Slow',
+        'Daniel Kahneman',
+        '9780374533557',
+        '2011-10-25',
+        499,
+        'Deux systèmes de pensée.',
+        6,
+        3,
+        4
+    ),
+    (
+        'Zero to One',
+        'Peter Thiel',
+        '9780804139298',
+        '2014-09-16',
+        224,
+        'Créer de l’innovation.',
+        4,
+        2,
+        4
+    ),
+    (
+        'The Pragmatic Programmer',
+        'Andrew Hunt',
+        '9780201616224',
+        '1999-10-20',
+        352,
+        'Bonnes pratiques du développeur.',
+        5,
+        2,
+        5
+    ),
+    (
+        'Refactoring',
+        'Martin Fowler',
+        '9780201485677',
+        '1999-07-08',
+        431,
+        'Améliorer du code existant.',
+        3,
+        1,
+        5
+    ),
+    (
+        'Design Patterns',
+        'Erich Gamma',
+        '9780201633610',
+        '1994-10-21',
+        395,
+        'Solutions de conception logicielle.',
+        4,
+        2,
+        5
+    ),
+    (
+        'Head First Design Patterns',
+        'Eric Freeman',
+        '9780596007126',
+        '2004-10-01',
+        694,
+        'Apprendre les patterns facilement.',
+        6,
+        3,
+        5
+    ),
+    (
+        'Eloquent JavaScript',
+        'Marijn Haverbeke',
+        '9781593279509',
+        '2018-12-04',
+        472,
+        'Guide moderne JavaScript.',
+        7,
+        4,
+        5
     );
 
 -- 7.4 Emprunts (Le trigger va décrémenter le stock)
