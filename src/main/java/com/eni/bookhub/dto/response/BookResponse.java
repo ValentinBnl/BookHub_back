@@ -1,5 +1,6 @@
 package com.eni.bookhub.dto.response;
 
+import lombok.AllArgsConstructor;
 import com.eni.bookhub.entity.Book;
 import lombok.Getter;
 
