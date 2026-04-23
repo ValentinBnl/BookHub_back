@@ -3,9 +3,11 @@ package com.eni.bookhub.controller;
 import com.eni.bookhub.dto.response.BookResponse;
 import com.eni.bookhub.dto.response.BookSummaryResponse;
 import com.eni.bookhub.service.BookService;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/books")
@@ -18,12 +20,41 @@ public class BookController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<BookSummaryResponse>> getBooks(@RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(bookService.getBooks(page));
+    public ResponseEntity<Page<BookSummaryResponse>> getAllBooks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "titre") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
+    ) {
+        return ResponseEntity.ok(bookService.getAllBooks(buildPageable(page, size, sortBy, direction)));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<BookSummaryResponse>> searchBooks(
+            @RequestParam(defaultValue = "") String query,
+            @RequestParam(required = false) String categorie,
+            @RequestParam(required = false) Boolean disponible,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "titre") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
+    ) {
+        return ResponseEntity.ok(bookService.search(query, categorie, disponible, buildPageable(page, size, sortBy, direction)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<BookResponse> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(bookService.getById(id));
+    }
+
+    private Pageable buildPageable(int page, int size, String sortBy, String direction) {
+        List<String> allowedFields = List.of("titre", "auteur", "isbn", "dateParution", "nombrePages");
+        if (!allowedFields.contains(sortBy)) {
+            sortBy = "titre";
+        }
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        return PageRequest.of(page, size, sort);
     }
 }
