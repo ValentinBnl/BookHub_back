@@ -4,6 +4,7 @@ import com.eni.bookhub.dto.response.LoanResponse;
 import com.eni.bookhub.entity.Book;
 import com.eni.bookhub.entity.Loan;
 import com.eni.bookhub.entity.User;
+import com.eni.bookhub.mapper.LoanMapper;
 import com.eni.bookhub.repository.BookRepository;
 import com.eni.bookhub.repository.LoanRepository;
 import com.eni.bookhub.repository.UserRepository;
@@ -19,31 +20,31 @@ public class LoanService {
     private final LoanRepository loanRepository;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
+    private final LoanMapper loanMapper;
 
     public LoanService(LoanRepository loanRepository,
             BookRepository bookRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            LoanMapper loanMapper) {
         this.loanRepository = loanRepository;
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
+        this.loanMapper = loanMapper;
     }
 
     @Transactional
     public LoanResponse borrowBook(Integer userId, Integer bookId) {
 
-        // récupérer user + book
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Livre introuvable"));
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
-        // vérif dispo
         if (book.getExemplairesDisponibles() <= 0) {
             throw new RuntimeException("Livre non disponible");
         }
 
-        // max 3 emprunts
         int activeLoans = loanRepository
                 .countByUtilisateurIdAndStatut(userId, "EN COURS");
 
@@ -51,7 +52,6 @@ public class LoanService {
             throw new RuntimeException("Max 3 emprunts atteints");
         }
 
-        // pas de retard
         boolean hasLate = loanRepository
                 .existsByUtilisateurIdAndStatut(userId, "EN RETARD");
 
@@ -59,22 +59,19 @@ public class LoanService {
             throw new RuntimeException("Utilisateur bloqué (retard)");
         }
 
-        // décrémentation stock (RG)
-        book.setExemplairesDisponibles(
-                book.getExemplairesDisponibles() - 1);
+        book.setExemplairesDisponibles(book.getExemplairesDisponibles() - 1);
         bookRepository.save(book);
 
-        // création emprunt
         Loan loan = new Loan();
         loan.setUtilisateur(user);
         loan.setLivre(book);
         loan.setDateEmprunt(LocalDateTime.now());
-        loan.setDateRetourPrevue(LocalDateTime.now().plusDays(14)); // RG-LOAN-02
+        loan.setDateRetourPrevue(LocalDateTime.now().plusDays(14));
         loan.setStatut("EN COURS");
 
         loanRepository.save(loan);
 
-        return mapToResponse(loan);
+        return loanMapper.toResponse(loan);
     }
 
     @Transactional(readOnly = true)
@@ -84,17 +81,7 @@ public class LoanService {
         return loanRepository
                 .findByUtilisateurIdAndStatutIn(user.getId(), List.of("EN COURS", "EN RETARD", "RENDU"))
                 .stream()
-                .map(this::mapToResponse)
+                .map(loanMapper::toResponse)
                 .toList();
-    }
-
-    private LoanResponse mapToResponse(Loan loan) {
-        return LoanResponse.builder()
-                .id(loan.getId())
-                .titre(loan.getLivre().getTitre())
-                .dateEmprunt(loan.getDateEmprunt().toString())
-                .dateRetourPrevue(loan.getDateRetourPrevue().toString())
-                .statut(loan.getStatut())
-                .build();
     }
 }

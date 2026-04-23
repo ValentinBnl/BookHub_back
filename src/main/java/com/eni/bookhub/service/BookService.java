@@ -3,6 +3,7 @@ package com.eni.bookhub.service;
 import com.eni.bookhub.dto.response.BookResponse;
 import com.eni.bookhub.dto.response.BookSummaryResponse;
 import com.eni.bookhub.entity.Book;
+import com.eni.bookhub.mapper.BookMapper;
 import com.eni.bookhub.repository.BookRepository;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -15,14 +16,16 @@ import java.util.stream.Collectors;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final BookMapper bookMapper;
 
-    public BookService(BookRepository bookRepository) {
+    public BookService(BookRepository bookRepository, BookMapper bookMapper) {
         this.bookRepository = bookRepository;
+        this.bookMapper = bookMapper;
     }
 
     @Transactional(readOnly = true)
     public Page<BookSummaryResponse> getAllBooks(Pageable pageable) {
-        return bookRepository.findAll(pageable).map(BookSummaryResponse::new);
+        return bookRepository.findAll(pageable).map(bookMapper::toSummaryResponse);
     }
 
     @Transactional(readOnly = true)
@@ -49,13 +52,13 @@ public class BookService {
                     .collect(Collectors.toList());
         }
 
-        return new PageImpl<>(filtered, pageable, filtered.size()).map(BookSummaryResponse::new);
+        return new PageImpl<>(filtered, pageable, filtered.size()).map(bookMapper::toSummaryResponse);
     }
 
     @Transactional(readOnly = true)
     public BookResponse getById(Integer id) {
         return bookRepository.findById(id)
-                .map(BookResponse::new)
+                .map(bookMapper::toResponse)
                 .orElseThrow(() -> new RuntimeException("Livre introuvable"));
     }
 }

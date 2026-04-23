@@ -4,22 +4,23 @@ import com.eni.bookhub.dto.request.LoginRequest;
 import com.eni.bookhub.dto.request.RegisterRequest;
 import com.eni.bookhub.dto.response.AuthResponse;
 import com.eni.bookhub.entity.User;
+import com.eni.bookhub.mapper.UserMapper;
 import com.eni.bookhub.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 @Service
 public class AuthService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
 
-    public AuthService(UserRepository userRepository, JwtService jwtService) {
+    public AuthService(UserRepository userRepository, JwtService jwtService, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.userMapper = userMapper;
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -29,16 +30,7 @@ public class AuthService {
         if (userRepository.existsByTelephone(request.getTelephone()))
             throw new RuntimeException("Téléphone déjà utilisé");
 
-        User user = User.builder()
-                .nom(request.getNom())
-                .prenom(request.getPrenom())
-                .email(request.getEmail())
-                .telephone(request.getTelephone())
-                .motDePasse(passwordEncoder.encode(request.getMotDePasse()))
-                .role(User.Role.UTILISATEUR)
-                .dateCreation(LocalDateTime.now())
-                .build();
-
+        User user = userMapper.toEntity(request, passwordEncoder.encode(request.getMotDePasse()));
         userRepository.save(user);
 
         String token = jwtService.generateToken(user.getEmail());
