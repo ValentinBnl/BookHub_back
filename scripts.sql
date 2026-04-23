@@ -42,7 +42,7 @@ GO
 CREATE TABLE
     Categories (
         id INT IDENTITY (1, 1) PRIMARY KEY,
-        nom NVARCHAR (50) NOT NULL
+        nom NVARCHAR (50) NOT NULL UNIQUE
     );
 
 CREATE TABLE

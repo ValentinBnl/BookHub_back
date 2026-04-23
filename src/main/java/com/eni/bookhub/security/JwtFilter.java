@@ -44,8 +44,8 @@ public class JwtFilter extends OncePerRequestFilter {
             Claims claims = Jwts.parser()
                     .verifyWith(jwtService.getSigningKey())
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
 
             String email = claims.getSubject();
 
