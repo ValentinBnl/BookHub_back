@@ -292,7 +292,7 @@ VALUES
         144,
         'Essai sur les dangers des sociétés modernes.',
         6,
-        3,
+        6,
         1
     ),
     (
@@ -303,7 +303,7 @@ VALUES
         249,
         'Une société où les livres sont interdits.',
         7,
-        4,
+        7,
         1
     ),
     (
@@ -314,7 +314,7 @@ VALUES
         416,
         'Une dystopie sur une société totalitaire religieuse.',
         5,
-        2,
+        5,
         1
     ),
     (
@@ -325,7 +325,7 @@ VALUES
         271,
         'Un classique du cyberpunk.',
         6,
-        3,
+        6,
         2
     ),
     (
@@ -336,7 +336,7 @@ VALUES
         255,
         'La chute et renaissance d’un empire galactique.',
         8,
-        5,
+        8,
         2
     ),
     (
@@ -347,7 +347,7 @@ VALUES
         480,
         'Un roman culte du cyberpunk et du métavers.',
         4,
-        2,
+        4,
         2
     ),
     (
@@ -358,7 +358,7 @@ VALUES
         186,
         'Un homme face à l’absurdité de la vie.',
         6,
-        2,
+        6,
         3
     ),
     (
@@ -369,7 +369,7 @@ VALUES
         308,
         'Une épidémie révélant la nature humaine.',
         5,
-        1,
+        5,
         3
     ),
     (
@@ -380,7 +380,7 @@ VALUES
         1463,
         'Une fresque sociale et humaine.',
         3,
-        1,
+        3,
         3
     ),
     (
@@ -391,7 +391,7 @@ VALUES
         1243,
         'Une vengeance magistrale.',
         4,
-        2,
+        4,
         3
     ),
     (
@@ -402,7 +402,7 @@ VALUES
         443,
         'Histoire de l’humanité.',
         9,
-        5,
+        9,
         4
     ),
     (
@@ -413,7 +413,7 @@ VALUES
         450,
         'L’avenir de l’humanité.',
         7,
-        3,
+        7,
         4
     ),
     (
@@ -424,7 +424,7 @@ VALUES
         296,
         'Se concentrer dans un monde de distractions.',
         5,
-        2,
+        5,
         4
     ),
     (
@@ -435,7 +435,7 @@ VALUES
         499,
         'Deux systèmes de pensée.',
         6,
-        3,
+        6,
         4
     ),
     (
@@ -446,7 +446,7 @@ VALUES
         224,
         'Créer de l’innovation.',
         4,
-        2,
+        4,
         4
     ),
     (
@@ -457,7 +457,7 @@ VALUES
         352,
         'Bonnes pratiques du développeur.',
         5,
-        2,
+        5,
         5
     ),
     (
@@ -468,7 +468,7 @@ VALUES
         431,
         'Améliorer du code existant.',
         3,
-        1,
+        3,
         5
     ),
     (
@@ -479,7 +479,7 @@ VALUES
         395,
         'Solutions de conception logicielle.',
         4,
-        2,
+        4,
         5
     ),
     (
@@ -490,7 +490,7 @@ VALUES
         694,
         'Apprendre les patterns facilement.',
         6,
-        3,
+        6,
         5
     ),
     (
@@ -501,7 +501,7 @@ VALUES
         472,
         'Guide moderne JavaScript.',
         7,
-        4,
+        7,
         5
     );
 
