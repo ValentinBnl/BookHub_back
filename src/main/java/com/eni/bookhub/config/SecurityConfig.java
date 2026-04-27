@@ -24,10 +24,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // La chaîne de sécurité s'applique uniquement aux routes de l'API,
+                // ce qui exclut naturellement /v3/api-docs/** et /swagger-ui/**
+                .securityMatcher("/auth/**", "/books/**", "/loans/**",
+                        "/reservations/**", "/users/**", "/ratings/**", "/categories/**")
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/books", "/books/search", "/books/{id}").permitAll()
                         .anyRequest().authenticated()
