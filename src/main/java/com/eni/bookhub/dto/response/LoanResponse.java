@@ -1,11 +1,9 @@
 package com.eni.bookhub.dto.response;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class LoanResponse {
 

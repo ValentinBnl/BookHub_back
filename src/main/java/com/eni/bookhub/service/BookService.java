@@ -5,6 +5,7 @@ import com.eni.bookhub.dto.response.BookResponse;
 import com.eni.bookhub.dto.response.BookSummaryResponse;
 import com.eni.bookhub.entity.Book;
 import com.eni.bookhub.entity.Category;
+import com.eni.bookhub.mapper.BookMapper;
 import com.eni.bookhub.repository.BookRepository;
 import com.eni.bookhub.repository.CategoryRepository;
 import com.eni.bookhub.repository.LoanRepository;
@@ -23,22 +24,21 @@ import java.util.stream.Collectors;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final BookMapper bookMapper;
     private final CategoryRepository categoryRepository;
     private final LoanRepository loanRepository;
 
-    public BookService(BookRepository bookRepository, CategoryRepository categoryRepository, LoanRepository loanRepository) {
+    public BookService(BookRepository bookRepository, BookMapper bookMapper,
+                       CategoryRepository categoryRepository, LoanRepository loanRepository) {
         this.bookRepository = bookRepository;
+        this.bookMapper = bookMapper;
         this.categoryRepository = categoryRepository;
         this.loanRepository = loanRepository;
     }
 
-    private BookResponse toResponse(Book book) {
-        return new BookResponse(book);
-    }
-
     @Transactional(readOnly = true)
     public Page<BookSummaryResponse> getAllBooks(Pageable pageable) {
-        return bookRepository.findAll(pageable).map(BookSummaryResponse::new);
+        return bookRepository.findAll(pageable).map(bookMapper::toSummaryResponse);
     }
 
     @Transactional(readOnly = true)
@@ -65,13 +65,13 @@ public class BookService {
                     .collect(Collectors.toList());
         }
 
-        return new PageImpl<>(filtered, pageable, filtered.size()).map(BookSummaryResponse::new);
+        return new PageImpl<>(filtered, pageable, filtered.size()).map(bookMapper::toSummaryResponse);
     }
 
     @Transactional(readOnly = true)
     public BookResponse getById(Integer id) {
         return bookRepository.findById(id)
-                .map(BookResponse::new)
+                .map(bookMapper::toResponse)
                 .orElseThrow(() -> new RuntimeException("Livre introuvable"));
     }
 
@@ -91,7 +91,7 @@ public class BookService {
                 .exemplairesDisponibles(request.getTotalExemplaires())
                 .categorie(categorie)
                 .build();
-        return toResponse(bookRepository.save(book));
+        return bookMapper.toResponse(bookRepository.save(book));
     }
 
     @Transactional
@@ -109,7 +109,7 @@ public class BookService {
         book.setUrlCouverture(request.getUrlCouverture());
         book.setTotalExemplaires(request.getTotalExemplaires());
         book.setCategorie(categorie);
-        return toResponse(book);
+        return bookMapper.toResponse(book);
     }
 
     @Transactional

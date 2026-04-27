@@ -5,6 +5,7 @@ import com.eni.bookhub.dto.response.ReservationResponse;
 import com.eni.bookhub.entity.Book;
 import com.eni.bookhub.entity.Reservation;
 import com.eni.bookhub.entity.User;
+import com.eni.bookhub.mapper.ReservationMapper;
 import com.eni.bookhub.repository.BookRepository;
 import com.eni.bookhub.repository.ReservationRepository;
 import com.eni.bookhub.repository.UserRepository;
@@ -15,14 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
 
-    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final List<Reservation.Status> ACTIVE_STATUSES =
             List.of(Reservation.Status.EN_ATTENTE, Reservation.Status.DISPONIBLE);
 
@@ -30,6 +29,7 @@ public class ReservationService {
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
     private final LoanService loanService;
+    private final ReservationMapper reservationMapper;
 
     @Transactional
     public ReservationResponse createReservation(String email, ReservationRequest request) {
@@ -65,7 +65,7 @@ public class ReservationService {
                 .status(Reservation.Status.EN_ATTENTE)
                 .build();
 
-        return toResponse(reservationRepository.save(reservation));
+        return reservationMapper.toResponse(reservationRepository.save(reservation));
     }
 
     @Transactional(readOnly = true)
@@ -73,14 +73,14 @@ public class ReservationService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur introuvable"));
         return reservationRepository.findByUserId(user.getId()).stream()
-                .map(this::toResponse)
+                .map(reservationMapper::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<ReservationResponse> getAllReservations() {
         return reservationRepository.findAll().stream()
-                .map(this::toResponse)
+                .map(reservationMapper::toResponse)
                 .toList();
     }
 
@@ -132,7 +132,7 @@ public class ReservationService {
         reservation.setStatus(Reservation.Status.DISPONIBLE);
         reservationRepository.save(reservation);
         shiftRanksDown(book.getId(), validatedRank);
-        return toResponse(reservation);
+        return reservationMapper.toResponse(reservation);
     }
 
     private void shiftRanksDown(Integer bookId, Integer fromRank) {
@@ -142,16 +142,5 @@ public class ReservationService {
         reservationRepository.saveAll(toShift);
     }
 
-    private ReservationResponse toResponse(Reservation r) {
-        return ReservationResponse.builder()
-                .id(r.getId())
-                .userId(r.getUser().getId())
-                .userName(r.getUser().getPrenom() + " " + r.getUser().getNom())
-                .bookId(r.getBook().getId())
-                .bookTitle(r.getBook().getTitre())
-                .reservationDate(r.getReservationDate().format(FMT))
-                .rankWaitingList(r.getRankWaitingList())
-                .status(r.getStatus().name())
-                .build();
-    }
+
 }
