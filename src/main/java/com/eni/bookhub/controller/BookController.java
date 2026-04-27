@@ -41,12 +41,19 @@ public class BookController {
             @RequestParam(defaultValue = "") String query,
             @RequestParam(required = false) String categorie,
             @RequestParam(required = false) Boolean disponible,
+            @RequestParam(required = false) Integer anneeMin,
+            @RequestParam(required = false) Integer anneeMax,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "titre") String sortBy,
             @RequestParam(defaultValue = "asc") String direction
     ) {
-        return ResponseEntity.ok(bookService.search(query, categorie, disponible, buildPageable(page, size, sortBy, direction)));
+        return ResponseEntity.ok(bookService.search(query, categorie, disponible, anneeMin, anneeMax, buildPageable(page, size, sortBy, direction)));
+    }
+
+    @GetMapping("/years")
+    public ResponseEntity<int[]> getYearRange() {
+        return ResponseEntity.ok(bookService.getYearRange());
     }
 
     @GetMapping("/{id}")
