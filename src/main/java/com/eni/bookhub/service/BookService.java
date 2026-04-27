@@ -9,16 +9,16 @@ import com.eni.bookhub.mapper.BookMapper;
 import com.eni.bookhub.repository.BookRepository;
 import com.eni.bookhub.repository.CategoryRepository;
 import com.eni.bookhub.repository.LoanRepository;
+import jakarta.persistence.criteria.Expression;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class BookService {
@@ -42,30 +42,53 @@ public class BookService {
     }
 
     @Transactional(readOnly = true)
-    public Page<BookSummaryResponse> search(String query, String categorie, Boolean disponible, Pageable pageable) {
-        Page<Book> page = bookRepository
-                .findByTitreContainingIgnoreCaseOrAuteurContainingIgnoreCaseOrIsbnContainingIgnoreCase(
-                        query, query, query, pageable
-                );
+    public Page<BookSummaryResponse> search(String query, String categorie, Boolean disponible,
+                                            Integer anneeMin, Integer anneeMax, Pageable pageable) {
+        Specification<Book> spec = (root, cq, cb) -> cb.conjunction();
 
-        List<Book> filtered = page.getContent();
+        if (query != null && !query.isBlank()) {
+            String like = "%" + query.toLowerCase() + "%";
+            spec = spec.and((root, cq, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("titre")),  like),
+                    cb.like(cb.lower(root.get("auteur")), like),
+                    cb.like(cb.lower(root.get("isbn")),   like)
+            ));
+        }
 
         if (categorie != null && !categorie.isBlank()) {
-            filtered = filtered.stream()
-                    .filter(book -> book.getCategorie() != null &&
-                            book.getCategorie().getNom().equalsIgnoreCase(categorie))
-                    .collect(Collectors.toList());
+            spec = spec.and((root, cq, cb) ->
+                    cb.equal(cb.lower(root.get("categorie").get("nom")), categorie.toLowerCase())
+            );
         }
 
         if (disponible != null) {
-            filtered = filtered.stream()
-                    .filter(book -> disponible
-                            ? book.getExemplairesDisponibles() > 0
-                            : book.getExemplairesDisponibles() == 0)
-                    .collect(Collectors.toList());
+            spec = spec.and((root, cq, cb) -> disponible
+                    ? cb.greaterThan(root.get("exemplairesDisponibles"), 0)
+                    : cb.equal(root.get("exemplairesDisponibles"), 0));
         }
 
-        return new PageImpl<>(filtered, pageable, filtered.size()).map(bookMapper::toSummaryResponse);
+        if (anneeMin != null) {
+            spec = spec.and((root, cq, cb) -> {
+                Expression<Integer> year = cb.function("YEAR", Integer.class, root.get("dateParution"));
+                return cb.greaterThanOrEqualTo(year, anneeMin);
+            });
+        }
+
+        if (anneeMax != null) {
+            spec = spec.and((root, cq, cb) -> {
+                Expression<Integer> year = cb.function("YEAR", Integer.class, root.get("dateParution"));
+                return cb.lessThanOrEqualTo(year, anneeMax);
+            });
+        }
+
+        return bookRepository.findAll(spec, pageable).map(bookMapper::toSummaryResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public int[] getYearRange() {
+        int min = bookRepository.findMinYear() != null ? bookRepository.findMinYear() : 1800;
+        int max = bookRepository.findMaxYear() != null ? bookRepository.findMaxYear() : java.time.Year.now().getValue();
+        return new int[]{ min, max };
     }
 
     @Transactional(readOnly = true)
