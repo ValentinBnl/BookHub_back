@@ -18,23 +18,23 @@ public class Loan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "utilisateur_id")
     private User utilisateur;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "livre_id")
     private Book livre;
 
-    @Column(name = "date_emprunt")
+    @Column(name = "date_emprunt", nullable = false)
     private LocalDateTime dateEmprunt;
 
-    @Column(name = "date_retour_prevue")
+    @Column(name = "date_retour_prevue", nullable = false)
     private LocalDateTime dateRetourPrevue;
 
     @Column(name = "date_retour_effective")
     private LocalDateTime dateRetourEffective;
 
-    @Column(name = "statut")
+    @Column(name = "statut", nullable = false, length = 20)
     private String statut;
 }

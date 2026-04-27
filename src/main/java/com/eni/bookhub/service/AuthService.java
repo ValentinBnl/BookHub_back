@@ -33,7 +33,7 @@ public class AuthService {
         User user = userMapper.toEntity(request, passwordEncoder.encode(request.getMotDePasse()));
         userRepository.save(user);
 
-        String token = jwtService.generateToken(user.getEmail());
+        String token = jwtService.generateToken(user.getEmail(), user.getRole().name());
         return new AuthResponse(token, user.getEmail(), user.getRole().name());
     }
 
@@ -44,7 +44,7 @@ public class AuthService {
         if (!passwordEncoder.matches(request.getMotDePasse(), user.getMotDePasse()))
             throw new RuntimeException("Email ou mot de passe incorrect");
 
-        String token = jwtService.generateToken(user.getEmail());
+        String token = jwtService.generateToken(user.getEmail(), user.getRole().name());
         return new AuthResponse(token, user.getEmail(), user.getRole().name());
     }
 }

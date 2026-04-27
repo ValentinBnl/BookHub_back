@@ -23,9 +23,9 @@ public class LoanService {
     private final LoanMapper loanMapper;
 
     public LoanService(LoanRepository loanRepository,
-            BookRepository bookRepository,
-            UserRepository userRepository,
-            LoanMapper loanMapper) {
+                       BookRepository bookRepository,
+                       UserRepository userRepository,
+                       LoanMapper loanMapper) {
         this.loanRepository = loanRepository;
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
@@ -74,12 +74,41 @@ public class LoanService {
         return loanMapper.toResponse(loan);
     }
 
+    @Transactional
+    public LoanResponse returnBook(Integer loanId) {
+
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new RuntimeException("Emprunt introuvable"));
+
+        if (!loan.getStatut().equals("EN COURS")) {
+            throw new RuntimeException("Emprunt déjà retourné");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        loan.setDateRetourEffective(now);
+
+        if (now.isAfter(loan.getDateRetourPrevue())) {
+            loan.setStatut("EN RETARD");
+        } else {
+            loan.setStatut("RENDU");
+        }
+
+        loanRepository.save(loan);
+
+        return loanMapper.toResponse(loan);
+    }
+
     @Transactional(readOnly = true)
     public List<LoanResponse> getUserLoans(String email) {
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
         return loanRepository
-                .findByUtilisateurIdAndStatutIn(user.getId(), List.of("EN COURS", "EN RETARD", "RENDU"))
+                .findByUtilisateurIdAndStatutIn(
+                        user.getId(),
+                        List.of("EN COURS", "EN RETARD", "RENDU")
+                )
                 .stream()
                 .map(loanMapper::toResponse)
                 .toList();

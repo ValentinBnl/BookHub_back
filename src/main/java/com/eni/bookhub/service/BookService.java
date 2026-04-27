@@ -1,13 +1,21 @@
 package com.eni.bookhub.service;
 
+import com.eni.bookhub.dto.request.BookRequest;
 import com.eni.bookhub.dto.response.BookResponse;
 import com.eni.bookhub.dto.response.BookSummaryResponse;
 import com.eni.bookhub.entity.Book;
+import com.eni.bookhub.entity.Category;
 import com.eni.bookhub.mapper.BookMapper;
 import com.eni.bookhub.repository.BookRepository;
-import org.springframework.data.domain.*;
+import com.eni.bookhub.repository.CategoryRepository;
+import com.eni.bookhub.repository.LoanRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,10 +25,15 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
+    private final CategoryRepository categoryRepository;
+    private final LoanRepository loanRepository;
 
-    public BookService(BookRepository bookRepository, BookMapper bookMapper) {
+    public BookService(BookRepository bookRepository, BookMapper bookMapper,
+                       CategoryRepository categoryRepository, LoanRepository loanRepository) {
         this.bookRepository = bookRepository;
         this.bookMapper = bookMapper;
+        this.categoryRepository = categoryRepository;
+        this.loanRepository = loanRepository;
     }
 
     @Transactional(readOnly = true)
@@ -60,5 +73,51 @@ public class BookService {
         return bookRepository.findById(id)
                 .map(bookMapper::toResponse)
                 .orElseThrow(() -> new RuntimeException("Livre introuvable"));
+    }
+
+    @Transactional
+    public BookResponse createBook(BookRequest request) {
+        Category categorie = categoryRepository.findById(request.getCategorieId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Catégorie introuvable"));
+        Book book = Book.builder()
+                .titre(request.getTitre())
+                .auteur(request.getAuteur())
+                .isbn(request.getIsbn())
+                .dateParution(request.getDateParution())
+                .nombrePages(request.getNombrePages())
+                .description(request.getDescription())
+                .urlCouverture(request.getUrlCouverture())
+                .totalExemplaires(request.getTotalExemplaires())
+                .exemplairesDisponibles(request.getTotalExemplaires())
+                .categorie(categorie)
+                .build();
+        return bookMapper.toResponse(bookRepository.save(book));
+    }
+
+    @Transactional
+    public BookResponse updateBook(Integer id, BookRequest request) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Livre introuvable"));
+        Category categorie = categoryRepository.findById(request.getCategorieId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Catégorie introuvable"));
+        book.setTitre(request.getTitre());
+        book.setAuteur(request.getAuteur());
+        book.setIsbn(request.getIsbn());
+        book.setDateParution(request.getDateParution());
+        book.setNombrePages(request.getNombrePages());
+        book.setDescription(request.getDescription());
+        book.setUrlCouverture(request.getUrlCouverture());
+        book.setTotalExemplaires(request.getTotalExemplaires());
+        book.setCategorie(categorie);
+        return bookMapper.toResponse(book);
+    }
+
+    @Transactional
+    public void deleteBook(Integer id) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Livre introuvable"));
+        if (loanRepository.existsByLivreIdAndStatutIn(id, List.of("EN COURS", "EN RETARD")))
+            throw new RuntimeException("Impossible de supprimer : des emprunts sont en cours");
+        bookRepository.delete(book);
     }
 }
