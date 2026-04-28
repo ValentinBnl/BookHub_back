@@ -27,13 +27,13 @@ public class Loan {
     private Book livre;
 
     @Column(name = "date_emprunt", nullable = false)
-    private LocalDate dateEmprunt;
+    private LocalDateTime dateEmprunt;
 
     @Column(name = "date_retour_prevue", nullable = false)
-    private LocalDate dateRetourPrevue;
+    private LocalDateTime dateRetourPrevue;
 
     @Column(name = "date_retour_effective")
-    private LocalDate dateRetourEffective;
+    private LocalDateTime dateRetourEffective;
 
     @Column(name = "statut", nullable = false, length = 20)
     private String statut;

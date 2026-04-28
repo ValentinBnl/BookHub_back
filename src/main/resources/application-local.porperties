@@ -1,0 +1,6 @@
+spring.datasource.password=DevPassword123!
+jwt.secret=ZHVtbXktc2VjcmV0LWtleS1mb3Itand0LXNlY3VyaXR5LTEyMzQ1Ng==
+
+# PROD (a faire au deploiement)
+# SPRING_DATASOURCE_PASSWORD=ProdPassword123!
+

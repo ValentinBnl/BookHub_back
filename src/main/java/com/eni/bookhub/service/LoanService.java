@@ -59,8 +59,9 @@ public class LoanService {
         Loan loan = new Loan();
         loan.setUtilisateur(user);
         loan.setLivre(book);
-        loan.setDateEmprunt(LocalDateTime.now());
-        loan.setDateRetourPrevue(LocalDateTime.now().plusDays(14));
+        LocalDateTime now = LocalDateTime.now();
+        loan.setDateEmprunt(now);
+        loan.setDateRetourPrevue(now.plusDays(14));
         loan.setStatut("EN COURS");
 
         loanRepository.save(loan);
