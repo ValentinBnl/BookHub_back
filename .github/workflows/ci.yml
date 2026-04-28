@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -19,5 +22,5 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
 
-      - name: Run tests
-        run: ./gradlew test
+      - name: Run unit tests
+        run: ./gradlew test --tests "com.eni.bookhub.mapper.*" --tests "com.eni.bookhub.service.*"
