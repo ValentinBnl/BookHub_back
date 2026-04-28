@@ -4,6 +4,7 @@ import com.eni.bookhub.dto.request.UpdatePasswordRequest;
 import com.eni.bookhub.dto.request.UpdateProfileRequest;
 import com.eni.bookhub.dto.response.UserResponse;
 import com.eni.bookhub.entity.User;
+import com.eni.bookhub.mapper.UserMapper;
 import com.eni.bookhub.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,16 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     public UserResponse getProfile(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
-        return new UserResponse(user);
+        return userMapper.toResponse(user);
     }
 
     @Transactional
@@ -38,7 +41,7 @@ public class UserService {
         user.setPrenom(request.getPrenom());
         user.setTelephone(request.getTelephone());
 
-        return new UserResponse(userRepository.save(user));
+        return userMapper.toResponse(userRepository.save(user));
     }
 
     @Transactional
