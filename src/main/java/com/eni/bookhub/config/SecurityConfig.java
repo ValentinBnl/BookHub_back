@@ -1,6 +1,7 @@
 package com.eni.bookhub.config;
 
 import com.eni.bookhub.security.JwtFilter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
