@@ -23,4 +23,4 @@ jobs:
           distribution: 'temurin'
 
       - name: Run unit tests
-        run: ./gradlew test --tests "com.eni.bookhub.mapper.*" --tests "com.eni.bookhub.service.*"
+        run: ./gradlew test
