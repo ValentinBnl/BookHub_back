@@ -8,6 +8,7 @@ import com.eni.bookhub.mapper.LoanMapper;
 import com.eni.bookhub.repository.BookRepository;
 import com.eni.bookhub.repository.LoanRepository;
 import com.eni.bookhub.repository.UserRepository;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,9 +60,6 @@ public class LoanService {
             throw new RuntimeException("Utilisateur bloqué (retard)");
         }
 
-        book.setExemplairesDisponibles(book.getExemplairesDisponibles() - 1);
-        bookRepository.save(book);
-
         Loan loan = new Loan();
         loan.setUtilisateur(user);
         loan.setLivre(book);
@@ -81,22 +79,24 @@ public class LoanService {
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new RuntimeException("Emprunt introuvable"));
 
-        if (!loan.getStatut().equals("EN COURS")) {
+        if (!loan.getStatut().equals("EN COURS") && !loan.getStatut().equals("EN RETARD")) {
             throw new RuntimeException("Emprunt déjà retourné");
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        loan.setDateRetourEffective(now);
-
-        if (now.isAfter(loan.getDateRetourPrevue())) {
-            loan.setStatut("EN RETARD");
-        } else {
-            loan.setStatut("RENDU");
-        }
+        loan.setDateRetourEffective(LocalDateTime.now());
+        loan.setStatut("RENDU");
 
         loanRepository.save(loan);
 
         return loanMapper.toResponse(loan);
+    }
+
+    @Scheduled(cron = "0 0 * * * *")
+    @Transactional
+    public void markOverdueLoans() {
+        List<Loan> overdue = loanRepository.findByStatutAndDateRetourPrevueBefore("EN COURS", LocalDateTime.now());
+        overdue.forEach(loan -> loan.setStatut("EN RETARD"));
+        loanRepository.saveAll(overdue);
     }
 
     @Transactional(readOnly = true)

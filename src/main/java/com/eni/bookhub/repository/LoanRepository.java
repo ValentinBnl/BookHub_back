@@ -3,6 +3,7 @@ package com.eni.bookhub.repository;
 import com.eni.bookhub.entity.Loan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -17,4 +18,6 @@ public interface LoanRepository extends JpaRepository<Loan, Integer> {
     boolean existsByUtilisateurIdAndStatut(Integer utilisateurId, String statut);
 
     List<Loan> findByUtilisateurIdAndStatutIn(Integer utilisateurId, List<String> statuts);
+
+    List<Loan> findByStatutAndDateRetourPrevueBefore(String statut, LocalDateTime dateRetourPrevue);
 }

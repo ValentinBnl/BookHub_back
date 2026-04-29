@@ -23,6 +23,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,10 +59,10 @@ class LoanServiceTest {
                 .build();
     }
 
-    // --- borrowBook ---
+    // ── borrowBook ─────────────────────────────────────────────────────────────
 
     @Test
-    void borrowBook_success_createsLoanAndDecrementsAvailability() {
+    void borrowBook_success_createsLoan() {
         LoanResponse expected = LoanResponse.builder().id(10).titre("Dune").statut("EN COURS").build();
 
         when(bookRepository.findById(1)).thenReturn(Optional.of(book));
@@ -73,8 +75,8 @@ class LoanServiceTest {
         LoanResponse result = loanService.borrowBook(1, 1);
 
         assertThat(result.getStatut()).isEqualTo("EN COURS");
-        assertThat(book.getExemplairesDisponibles()).isEqualTo(2);
-        verify(bookRepository).save(book);
+        // Le décrément est géré par le trigger SQL, pas par le service
+        verify(bookRepository, never()).save(any());
     }
 
     @Test
@@ -150,14 +152,12 @@ class LoanServiceTest {
                 .hasMessageContaining("bloqué");
     }
 
-    // --- returnBook ---
+    // ── returnBook ─────────────────────────────────────────────────────────────
 
     @Test
     void returnBook_onTime_setsStatusRendu() {
         Loan loan = Loan.builder()
-                .id(10)
-                .livre(book)
-                .utilisateur(user)
+                .id(10).livre(book).utilisateur(user)
                 .dateEmprunt(LocalDateTime.now().minusDays(5))
                 .dateRetourPrevue(LocalDateTime.now().plusDays(9))
                 .statut("EN COURS")
@@ -167,18 +167,18 @@ class LoanServiceTest {
         when(loanRepository.save(any())).thenReturn(loan);
         when(loanMapper.toResponse(any())).thenReturn(LoanResponse.builder().statut("RENDU").build());
 
-        LoanResponse result = loanService.returnBook(10);
+        loanService.returnBook(10);
 
         assertThat(loan.getStatut()).isEqualTo("RENDU");
         assertThat(loan.getDateRetourEffective()).isNotNull();
     }
 
     @Test
-    void returnBook_late_setsStatusEnRetard() {
+    void returnBook_late_setsStatusRendu() {
+        // Un livre rendu physiquement, même en retard, passe à RENDU
+        // C'est le scheduler qui bascule EN COURS → EN RETARD tant que le livre n'est pas rendu
         Loan loan = Loan.builder()
-                .id(11)
-                .livre(book)
-                .utilisateur(user)
+                .id(11).livre(book).utilisateur(user)
                 .dateEmprunt(LocalDateTime.now().minusDays(20))
                 .dateRetourPrevue(LocalDateTime.now().minusDays(6))
                 .statut("EN COURS")
@@ -186,23 +186,40 @@ class LoanServiceTest {
 
         when(loanRepository.findById(11)).thenReturn(Optional.of(loan));
         when(loanRepository.save(any())).thenReturn(loan);
-        when(loanMapper.toResponse(any())).thenReturn(LoanResponse.builder().statut("EN RETARD").build());
+        when(loanMapper.toResponse(any())).thenReturn(LoanResponse.builder().statut("RENDU").build());
 
         loanService.returnBook(11);
 
-        assertThat(loan.getStatut()).isEqualTo("EN RETARD");
+        assertThat(loan.getStatut()).isEqualTo("RENDU");
+    }
+
+    @Test
+    void returnBook_whenAlreadyMarkedEnRetard_setsStatusRendu() {
+        // Le scheduler a déjà basculé ce prêt en EN RETARD, l'utilisateur rend le livre
+        Loan loan = Loan.builder()
+                .id(12).livre(book).utilisateur(user)
+                .dateEmprunt(LocalDateTime.now().minusDays(20))
+                .dateRetourPrevue(LocalDateTime.now().minusDays(6))
+                .statut("EN RETARD")
+                .build();
+
+        when(loanRepository.findById(12)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(any())).thenReturn(loan);
+        when(loanMapper.toResponse(any())).thenReturn(LoanResponse.builder().statut("RENDU").build());
+
+        loanService.returnBook(12);
+
+        assertThat(loan.getStatut()).isEqualTo("RENDU");
+        assertThat(loan.getDateRetourEffective()).isNotNull();
     }
 
     @Test
     void returnBook_alreadyReturned_throwsException() {
-        Loan loan = Loan.builder()
-                .id(12)
-                .statut("RENDU")
-                .build();
+        Loan loan = Loan.builder().id(13).statut("RENDU").build();
 
-        when(loanRepository.findById(12)).thenReturn(Optional.of(loan));
+        when(loanRepository.findById(13)).thenReturn(Optional.of(loan));
 
-        assertThatThrownBy(() -> loanService.returnBook(12))
+        assertThatThrownBy(() -> loanService.returnBook(13))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("déjà retourné");
     }
@@ -216,7 +233,33 @@ class LoanServiceTest {
                 .hasMessageContaining("Emprunt introuvable");
     }
 
-    // --- getUserLoans ---
+    // ── markOverdueLoans ───────────────────────────────────────────────────────
+
+    @Test
+    void markOverdueLoans_marksOverdueLoansAsEnRetard() {
+        Loan loan1 = loanWithStatus("EN COURS");
+        Loan loan2 = loanWithStatus("EN COURS");
+        when(loanRepository.findByStatutAndDateRetourPrevueBefore(eq("EN COURS"), any(LocalDateTime.class)))
+                .thenReturn(List.of(loan1, loan2));
+
+        loanService.markOverdueLoans();
+
+        assertThat(loan1.getStatut()).isEqualTo("EN RETARD");
+        assertThat(loan2.getStatut()).isEqualTo("EN RETARD");
+        verify(loanRepository).saveAll(anyList());
+    }
+
+    @Test
+    void markOverdueLoans_whenNoneOverdue_savesEmptyList() {
+        when(loanRepository.findByStatutAndDateRetourPrevueBefore(eq("EN COURS"), any(LocalDateTime.class)))
+                .thenReturn(List.of());
+
+        loanService.markOverdueLoans();
+
+        verify(loanRepository).saveAll(List.of());
+    }
+
+    // ── getUserLoans ───────────────────────────────────────────────────────────
 
     @Test
     void getUserLoans_returnsAllStatuses() {
@@ -248,5 +291,14 @@ class LoanServiceTest {
         assertThatThrownBy(() -> loanService.getUserLoans("inconnu@test.com"))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("introuvable");
+    }
+
+    // ── helpers ────────────────────────────────────────────────────────────────
+
+    private Loan loanWithStatus(String statut) {
+        Loan loan = new Loan();
+        loan.setStatut(statut);
+        loan.setDateRetourPrevue(LocalDateTime.now().plusDays(14));
+        return loan;
     }
 }
