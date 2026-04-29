@@ -1,5 +1,7 @@
 package com.eni.bookhub.dto.response;
 
+import java.time.LocalDate;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,4 +15,5 @@ public class BookSummaryResponse {
     private Integer totalExemplaires;
     private Integer exemplairesDisponibles;
     private String categorie;
+    private LocalDate dateParution;
 }

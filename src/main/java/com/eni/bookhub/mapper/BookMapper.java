@@ -21,6 +21,7 @@ public class BookMapper {
                 .totalExemplaires(book.getTotalExemplaires())
                 .exemplairesDisponibles(book.getExemplairesDisponibles())
                 .categorie(book.getCategorie().getNom())
+                .categorieId(book.getCategorie().getId())
                 .build();
     }
 
@@ -33,6 +34,7 @@ public class BookMapper {
                 .totalExemplaires(book.getTotalExemplaires())
                 .exemplairesDisponibles(book.getExemplairesDisponibles())
                 .categorie(book.getCategorie().getNom())
+                .dateParution(book.getDateParution())
                 .build();
     }
 }

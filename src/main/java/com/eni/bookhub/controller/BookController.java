@@ -2,6 +2,7 @@ package com.eni.bookhub.controller;
 
 import com.eni.bookhub.dto.request.BookRequest;
 import com.eni.bookhub.dto.response.BookResponse;
+import com.eni.bookhub.dto.response.BookStatsResponse;
 import com.eni.bookhub.dto.response.BookSummaryResponse;
 import com.eni.bookhub.service.BookService;
 import jakarta.validation.Valid;
@@ -54,6 +55,11 @@ public class BookController {
     @GetMapping("/years")
     public ResponseEntity<int[]> getYearRange() {
         return ResponseEntity.ok(bookService.getYearRange());
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<BookStatsResponse> getStats() {
+        return ResponseEntity.ok(bookService.getStats());
     }
 
     @GetMapping("/{id}")

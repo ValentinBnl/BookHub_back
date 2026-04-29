@@ -19,4 +19,5 @@ public class BookResponse {
     private Integer totalExemplaires;
     private Integer exemplairesDisponibles;
     private String categorie;
+    private Integer categorieId;
 }

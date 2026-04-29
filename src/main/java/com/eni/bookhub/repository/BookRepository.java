@@ -27,6 +27,12 @@ public interface BookRepository extends JpaRepository<Book, Integer>, JpaSpecifi
     @Query("SELECT MIN(YEAR(b.dateParution)) FROM Book b WHERE b.dateParution IS NOT NULL")
     Integer findMinYear();
 
+    @Query("SELECT COALESCE(SUM(b.totalExemplaires), 0) FROM Book b")
+    long sumTotalExemplaires();
+
+    @Query("SELECT COALESCE(SUM(b.exemplairesDisponibles), 0) FROM Book b")
+    long sumExemplairesDisponibles();
+
     @Query("SELECT MAX(YEAR(b.dateParution)) FROM Book b WHERE b.dateParution IS NOT NULL")
     Integer findMaxYear();
 
