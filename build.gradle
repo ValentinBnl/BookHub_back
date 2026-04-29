@@ -33,10 +33,25 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.testcontainers:junit-jupiter:1.20.4'
+    testImplementation 'org.testcontainers:mssqlserver:1.20.4'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags 'integration'
+    }
     exclude '**/BookhubApplicationTests.class'
+}
+
+tasks.register('integrationTest', Test) {
+    description = 'Tests d\'intégration avec SQL Server (Testcontainers)'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
+    shouldRunAfter tasks.named('test')
 }
