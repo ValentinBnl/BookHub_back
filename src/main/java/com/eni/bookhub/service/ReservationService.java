@@ -39,9 +39,9 @@ public class ReservationService {
         Book book = bookRepository.findById(request.getBookId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Livre introuvable"));
 
-        if (book.getExemplairesDisponibles() > 0) {
+        if (book.getExemplairesDisponibles() <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Ce livre est disponible, veuillez effectuer un emprunt directement");
+                    "Ce livre n'a aucun exemplaire disponible");
         }
 
         if (reservationRepository.existsByUserIdAndBookIdAndStatusIn(user.getId(), book.getId(), ACTIVE_STATUSES)) {
