@@ -6,8 +6,10 @@ import com.eni.bookhub.dto.response.AuthResponse;
 import com.eni.bookhub.entity.User;
 import com.eni.bookhub.mapper.UserMapper;
 import com.eni.bookhub.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
@@ -25,10 +27,10 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail()))
-            throw new RuntimeException("Email déjà utilisé");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email déjà utilisé");
 
         if (userRepository.existsByTelephone(request.getTelephone()))
-            throw new RuntimeException("Téléphone déjà utilisé");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Téléphone déjà utilisé");
 
         User user = userMapper.toEntity(request, passwordEncoder.encode(request.getMotDePasse()));
         userRepository.save(user);
@@ -39,10 +41,10 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Email ou mot de passe incorrect"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou mot de passe incorrect"));
 
         if (!passwordEncoder.matches(request.getMotDePasse(), user.getMotDePasse()))
-            throw new RuntimeException("Email ou mot de passe incorrect");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou mot de passe incorrect");
 
         String token = jwtService.generateToken(user.getEmail(), user.getRole().name());
         return new AuthResponse(token, user.getEmail(), user.getRole().name());

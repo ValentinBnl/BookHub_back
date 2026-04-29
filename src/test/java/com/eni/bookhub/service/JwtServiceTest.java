@@ -76,6 +76,15 @@ class JwtServiceTest {
         assertThat(tokenUser).isNotEqualTo(tokenAdmin);
     }
 
+    @Test
+    void generateToken_acceptsPlainTextSecret() {
+        ReflectionTestUtils.setField(jwtService, "secretKey", "12345678901234567890123456789012");
+
+        String token = jwtService.generateToken("user@test.com", "UTILISATEUR");
+
+        assertThat(token).isNotBlank();
+    }
+
     private Claims parseClaims(String token) {
         return Jwts.parser()
                 .verifyWith(jwtService.getSigningKey())
