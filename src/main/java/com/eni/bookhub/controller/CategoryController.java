@@ -1,5 +1,6 @@
 package com.eni.bookhub.controller;
 
+import com.eni.bookhub.dto.response.CategoryResponse;
 import com.eni.bookhub.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,5 +20,10 @@ public class CategoryController {
     @GetMapping
     public ResponseEntity<List<String>> getAll() {
         return ResponseEntity.ok(categoryService.getAllCategoryNames());
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<List<CategoryResponse>> getAllWithDetails() {
+        return ResponseEntity.ok(categoryService.getAllWithDetails());
     }
 }

@@ -2,6 +2,7 @@ package com.eni.bookhub.service;
 
 import com.eni.bookhub.dto.request.BookRequest;
 import com.eni.bookhub.dto.response.BookResponse;
+import com.eni.bookhub.dto.response.BookStatsResponse;
 import com.eni.bookhub.dto.response.BookSummaryResponse;
 import com.eni.bookhub.entity.Book;
 import com.eni.bookhub.entity.Category;
@@ -96,6 +97,14 @@ public class BookService {
         return bookRepository.findById(id)
                 .map(bookMapper::toResponse)
                 .orElseThrow(() -> new RuntimeException("Livre introuvable"));
+    }
+
+    @Transactional(readOnly = true)
+    public BookStatsResponse getStats() {
+        long totalTitres = bookRepository.count();
+        long totalExemplaires = bookRepository.sumTotalExemplaires();
+        long disponibles = bookRepository.sumExemplairesDisponibles();
+        return new BookStatsResponse(totalTitres, totalExemplaires, disponibles, totalExemplaires - disponibles);
     }
 
     @Transactional
