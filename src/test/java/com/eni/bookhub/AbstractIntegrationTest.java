@@ -41,5 +41,6 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.datasource.password", SQL_SERVER::getPassword);
         // Hibernate crée le schéma au démarrage et le supprime à la fin
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+        registry.add("jwt.secret", () -> "integration-test-jwt-secret-32-chars");
     }
 }
