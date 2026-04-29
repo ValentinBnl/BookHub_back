@@ -17,6 +17,7 @@ public class ReservationMapper {
                 .userId(r.getUser().getId())
                 .userName(r.getUser().getPrenom() + " " + r.getUser().getNom())
                 .bookId(r.getBook().getId())
+                .urlCouverture(r.getBook().getUrlCouverture())
                 .bookTitle(r.getBook().getTitre())
                 .reservationDate(r.getReservationDate().format(FMT))
                 .rankWaitingList(r.getRankWaitingList())

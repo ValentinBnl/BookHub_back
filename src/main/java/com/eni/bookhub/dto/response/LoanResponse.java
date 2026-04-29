@@ -9,6 +9,9 @@ public class LoanResponse {
 
     private Integer id;
     private String titre;
+    private String auteur;
+    private String urlCouverture;
+    private String dateParution;
     private String dateEmprunt;
     private String dateRetourPrevue;
     private String statut;

@@ -17,6 +17,7 @@ public class ReservationResponse {
     private Integer userId;
     private String userName;
     private Integer bookId;
+    private String urlCouverture;
     private String bookTitle;
     private String reservationDate;
     private Integer rankWaitingList;
