@@ -6,6 +6,7 @@ import com.eni.bookhub.entity.Loan;
 import com.eni.bookhub.entity.User;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,7 +17,7 @@ class LoanMapperTest {
 
     @Test
     void toResponse_mapsAllFields() {
-        Book book = Book.builder().id(1).titre("Dune").build();
+        Book book = Book.builder().id(1).titre("Dune").auteur("Frank Herbert").dateParution(LocalDate.of(1965, 8, 1)).build();
         User user = User.builder().id(1).build();
         LocalDateTime borrow = LocalDateTime.of(2024, 3, 1, 9, 0);
         LocalDateTime due = LocalDateTime.of(2024, 3, 15, 9, 0);
@@ -41,7 +42,7 @@ class LoanMapperTest {
 
     @Test
     void toResponse_statusRendu_mapsCorrectly() {
-        Book book = Book.builder().id(2).titre("1984").build();
+        Book book = Book.builder().id(2).titre("1984").auteur("George Orwell").dateParution(LocalDate.of(1949, 6, 8)).build();
         Loan loan = Loan.builder()
                 .id(20)
                 .livre(book)
