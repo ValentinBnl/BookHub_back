@@ -160,6 +160,9 @@ VALUES
     ('Informatique');
 
 -- 7.2 Utilisateurs
+-- Mots de passe hashés avec BCrypt (coût 12), identique à BCryptPasswordEncoder(12) Spring
+-- jean.dupont, sophie.martin, thomas.l, c.moreau : Password1!
+-- admin@bookhub.com : Admin1234!
 INSERT INTO
     Utilisateurs (nom, prenom, email, telephone, mot_de_passe, role)
 VALUES
@@ -168,7 +171,7 @@ VALUES
         'Jean',
         'jean.dupont@email.com',
         '0601020304',
-        'hash_pw_1',
+        '$2y$12$QDFMeBCx2HZNTQ5qveZ29eCU5CHLuuIP/neKYsQ8CMk0yYYp2qFFi',
         'UTILISATEUR'
     ),
     (
@@ -176,7 +179,7 @@ VALUES
         'Sophie',
         'sophie.martin@email.com',
         '0611121314',
-        'hash_pw_2',
+        '$2y$12$fy44wlkt.gQ1a8ZxiI7Sk.W50N2CjcukWIeSFuTrqj7kw4f/i1ryq',
         'LIBRAIRE'
     ),
     (
@@ -184,7 +187,7 @@ VALUES
         'Global',
         'admin@bookhub.com',
         '0621222324',
-        'hash_pw_3',
+        '$2y$12$i2epxl4p1CU.Ruv7E2dCyusCaYDJdej24iBDQlm9SDdII68mWXZ2e',
         'ADMIN'
     ),
     (
@@ -192,7 +195,7 @@ VALUES
         'Thomas',
         'thomas.l@email.com',
         '0650403020',
-        'hash_pw_4',
+        '$2y$12$7XNl5lTs6H8ZkbfSaU44P.C8OkxlsmhLJ3ViXUbW582VWEWstdD3q',
         'UTILISATEUR'
     ),
     (
@@ -200,7 +203,7 @@ VALUES
         'Camille',
         'c.moreau@email.com',
         '0780901020',
-        'hash_pw_5',
+        '$2y$12$ntl10ZWdrr7jbFYqNvQ98OFq3SzMb1HvQJKARULveIEQIixyqaBw.',
         'UTILISATEUR'
     );
 
