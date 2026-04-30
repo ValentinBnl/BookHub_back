@@ -18,7 +18,7 @@ class LoanMapperTest {
     @Test
     void toResponse_mapsAllFields() {
         Book book = Book.builder().id(1).titre("Dune").auteur("Frank Herbert").dateParution(LocalDate.of(1965, 8, 1)).build();
-        User user = User.builder().id(1).build();
+        User user = User.builder().id(1).nom("Garcia").prenom("Alex").build();
         LocalDateTime borrow = LocalDateTime.of(2024, 3, 1, 9, 0);
         LocalDateTime due = LocalDateTime.of(2024, 3, 15, 9, 0);
 
@@ -38,6 +38,8 @@ class LoanMapperTest {
         assertThat(response.getDateEmprunt()).isEqualTo(borrow.toString());
         assertThat(response.getDateRetourPrevue()).isEqualTo(due.toString());
         assertThat(response.getStatut()).isEqualTo("EN COURS");
+        assertThat(response.getNom()).isEqualTo("Garcia");
+        assertThat(response.getPrenom()).isEqualTo("Alex");
     }
 
     @Test
@@ -46,7 +48,7 @@ class LoanMapperTest {
         Loan loan = Loan.builder()
                 .id(20)
                 .livre(book)
-                .utilisateur(User.builder().id(1).build())
+                .utilisateur(User.builder().id(1).nom("Orwell").prenom("George").build())
                 .dateEmprunt(LocalDateTime.of(2024, 1, 1, 10, 0))
                 .dateRetourPrevue(LocalDateTime.of(2024, 1, 15, 10, 0))
                 .statut("RENDU")

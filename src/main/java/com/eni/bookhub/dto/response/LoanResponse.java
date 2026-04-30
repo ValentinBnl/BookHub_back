@@ -15,4 +15,7 @@ public class LoanResponse {
     private String dateEmprunt;
     private String dateRetourPrevue;
     private String statut;
+    private Integer userId;
+    private String nom;
+    private String prenom;
 }

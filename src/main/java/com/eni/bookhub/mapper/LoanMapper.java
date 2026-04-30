@@ -17,6 +17,9 @@ public class LoanMapper {
                 .dateEmprunt(loan.getDateEmprunt().toString())
                 .dateRetourPrevue(loan.getDateRetourPrevue().toString())
                 .statut(loan.getStatut())
+                .userId(loan.getLivre().getId())
+                .nom(loan.getUtilisateur().getNom())
+                .prenom(loan.getUtilisateur().getPrenom())
                 .build();
     }
 }
