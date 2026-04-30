@@ -27,6 +27,12 @@ public class LoanController {
         return service.borrowBook(request.getUserId(), request.getBookId());
     }
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('LIBRAIRE', 'ADMIN')")
+    public ResponseEntity<List<LoanResponse>> getAllLoans() {
+        return ResponseEntity.ok(service.getAllLoans());
+    }
+
     @GetMapping("/me")
     public ResponseEntity<List<LoanResponse>> getMyLoans(Authentication auth) {
         return ResponseEntity.ok(service.getUserLoans(auth.getName()));
